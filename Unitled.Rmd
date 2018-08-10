@@ -1,0 +1,75 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r}
+library(plotly)
+```
+
+```{r}
+alfa = 15 * pi/180
+
+Rotar15 = matrix(
+  c(cos(alfa), -sin(alfa), 0,
+    sin(alfa), cos(alfa), 0,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+```
+
+```{r}
+Estirar = matrix(
+  c(4, 0, 0,
+    0, 4, 0,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+```
+
+```{r}
+xy = c(1, 1, 1, 2, 4, 2, 4, 1) #x0, y0, x1, y1, x2, y2
+```
+
+```{r}
+transformaciones = list(Rotar15, Rotar15, Rotar15, Estirar)
+
+cuantos <- length(xy)
+x = xy[seq(1, cuantos, by = 2)] #Toma cada dos valores el primero (qe seria la x)
+y = xy[seq(2, cuantos, by = 2)] #Lo mismo pero con el segundo valor, qe es la y
+frame = rep(1, each = cuantos/2) #Los define como del primer frame
+
+xyAnterior = xy #Cada transformacion empieza en los xy qe dejo la anterior
+for (it in seq(1, length(transformaciones))) {
+  rxy = c()
+  for (i in seq(1, cuantos, by =2)) {
+    p <- xyAnterior[i:(i+1)] #P tiene el i-esimo xy anterior
+    r <- transformaciones[it][[1]] %*% append(p, 1) #Le aplico esta transformacion
+    
+    rxy <- append(rxy, r[1:2]) #Lo guardo para la proxima transformacion
+    
+    x <- append(x, r[1]) #Lo agrego para armar el dataframe de animar
+    y <- append(y, r[2])
+    frame <- append(frame, it+1)
+  }
+  xyAnterior <- rxy
+}
+```
+
+```{r}
+df <- data.frame(
+  x,
+  y,
+  frame
+)
+
+p <- ggplot(df) +
+  geom_polygon(aes(frame = frame, x= x, y=y), color = "red")
+ 
+ggplotly(p, width = 600, height = 600) %>%
+  animation_opts(1000)
+```
+

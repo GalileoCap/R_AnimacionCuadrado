@@ -1,0 +1,142 @@
+---
+title: "Rectangulo rotativo"
+author: "Galileo Cappella"
+date: "August 8, 2018"
+output: html_document
+---
+```{r}
+library(plotly)
+```
+
+```{r}
+#Para graficar con un solo cambio
+graficarUno <- function(pos) {
+  ggplot(pos, aes(x = x, y = y)) +
+  geom_polygon() +
+  xlim(-8, 8) +
+  ylim(-8, 8)
+}
+
+#Posiciones iniciales
+xy0 = c(-2, 0, 1)
+xy1 = c(0, 2, 1)
+xy2 = c(2, 0, 1)
+xy3 = c(0, -2, 1)
+
+posIn <- data.frame(
+  x = c(xy0[[1]], xy1[[1]], xy2[[1]], xy3[[1]]),
+  y = c(xy0[[2]], xy1[[2]], xy2[[2]], xy3[[2]])
+)
+
+graficarUno(posIn)
+```
+```{r}
+#Rotacion
+alfa = 45 * pi/180
+
+Rotar = matrix(
+  c(cos(alfa), -sin(alfa), 0,
+    sin(alfa), cos(alfa), 0,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+
+Ar <- Rotar %*% xy0
+Br <- Rotar %*% xy1
+Cr <- Rotar %*% xy2
+Dr <- Rotar %*% xy3
+
+posRot <- data.frame(
+  x = c(Ar[[1]], Br[[1]], Cr[[1]], Dr[[1]]),
+  y = c(Ar[[2]], Br[[2]], Cr[[2]], Dr[[2]])
+)
+
+graficarUno(posRot)
+```
+
+```{r}
+#Mover
+Mover = matrix(
+  c(1, 0, 3,
+    0, 1, 5,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+
+Am <- Mover %*% xy0
+Bm <- Mover %*% xy1
+Cm <- Mover %*% xy2
+Dm <- Mover %*% xy3
+
+posMov <- data.frame(
+  x = c(Am[[1]], Bm[[1]], Cm[[1]], Dm[[1]]),
+  y = c(Am[[2]], Bm[[2]], Cm[[2]], Dm[[2]])
+)
+
+graficarUno(posMov)
+```
+
+```{r}
+#Estirar
+Estirar = matrix(
+  c(4, 0, 0,
+    0, 2, 0,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+
+Ae <- Estirar %*% xy0
+Be <- Estirar %*% xy1
+Ce <- Estirar %*% xy2
+De <- Estirar %*% xy3
+
+posEst <- data.frame(
+  x = c(Ae[[1]], Be[[1]], Ce[[1]], De[[1]]),
+  y = c(Ae[[2]], Be[[2]], Ce[[2]], De[[2]])
+)
+
+graficarUno(posEst)
+```
+```{r}
+#Pruebo animar un punto moviendose por la pantalla
+
+puntos <- data.frame(
+  x = c(0, 1, 2, 3, 4, 5, 6),
+  y = c(0, 1, 2, 3, 2, 1, 0),
+  z = c(1, 2, 3, 4, 5, 6, 7)
+)
+
+p <- ggplot(df) +
+    geom_point(aes(frame = z, x= x, y=y), color = "red")
+ 
+  ggplotly(p, width = 800, height = 600) %>%
+    animation_opts(1000)
+```
+```{r}
+#Ahora intento hacer una animacion qe mueva un cuadrado
+posTest <- data.frame(
+  xmin = c(-2, 1, -2, -2),
+  ymin = c(-2, 1, -2, -2),
+  xmax = c(2, 2, -1, -1),
+  ymax = c(2, 2, -1, 1),
+  z = c(1, 2, 3, 4) #Define el frame. Cuando este cambia, pasa a la sigiente columna en los datos de arriba
+  )
+#El problema qe tengo es qe no puedo rotarlo, solo estirar y mover
+animar <- function(pos) {
+ p <- ggplot(pos, aes(frame = z, xmin = xmin, ymin = ymin, xmax = xmax, ymax = ymax)) +
+   geom_rect() +
+   xlim(c(-3, 3)) +
+   ylim(c(-3, 3))
+   
+ggplotly(p, width = 800, height = 600) %>%
+    animation_opts(1000)
+}
+
+animar(posTest)
+```
