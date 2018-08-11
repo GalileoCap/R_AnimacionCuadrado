@@ -125,3 +125,13 @@ dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0, fill="blue") {
 
 dibujarEstrella(4, alfa0=45, fill=3.1)
 ```
+```{r}
+estrella1df <- calcularEstrella(16, fill=3.0)
+estrella1xy <- c()
+
+for (i in 1:length(estrella1df$x)) {
+  estrella1xy <- append(estrella1xy, as.numeric(estrella1df[i, 1:2]))  
+}
+
+transformarYDibujar(estrella1xy, transformaciones1)
+```
