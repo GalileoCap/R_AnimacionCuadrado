@@ -31,45 +31,97 @@ Estirar = matrix(
 ```
 
 ```{r}
-xy = c(1, 1, 1, 2, 4, 2, 4, 1) #x0, y0, x1, y1, x2, y2
-```
-
-```{r}
-transformaciones = list(Rotar15, Rotar15, Rotar15, Estirar)
-
-cuantos <- length(xy)
-x = xy[seq(1, cuantos, by = 2)] #Toma cada dos valores el primero (qe seria la x)
-y = xy[seq(2, cuantos, by = 2)] #Lo mismo pero con el segundo valor, qe es la y
-frame = rep(1, each = cuantos/2) #Los define como del primer frame
-
-xyAnterior = xy #Cada transformacion empieza en los xy qe dejo la anterior
-for (it in seq(1, length(transformaciones))) {
-  rxy = c()
-  for (i in seq(1, cuantos, by =2)) {
-    p <- xyAnterior[i:(i+1)] #P tiene el i-esimo xy anterior
-    r <- transformaciones[it][[1]] %*% append(p, 1) #Le aplico esta transformacion
-    
-    rxy <- append(rxy, r[1:2]) #Lo guardo para la proxima transformacion
-    
-    x <- append(x, r[1]) #Lo agrego para armar el dataframe de animar
-    y <- append(y, r[2])
-    frame <- append(frame, it+1)
+calcularPuntos <- function(xy, transformaciones) {
+  cuantos <- length(xy)
+  x = xy[seq(1, cuantos, by = 2)] #Toma cada dos valores el primero (qe seria la x)
+  y = xy[seq(2, cuantos, by = 2)] #Lo mismo pero con el segundo valor, qe es la y
+  frame = rep(1, each = cuantos/2) #Los define como del primer frame
+  
+  xyAnterior = xy #Cada transformacion empieza en los xy qe dejo la anterior
+  for (it in seq(1, length(transformaciones))) {
+    rxy = c()
+    for (i in seq(1, cuantos, by =2)) {
+      p <- xyAnterior[i:(i+1)] #P tiene el i-esimo xy anterior
+      r <- transformaciones[it][[1]] %*% append(p, 1) #Le aplico esta transformacion
+      
+      rxy <- append(rxy, r[1:2]) #Lo guardo para la proxima transformacion
+      
+      x <- append(x, r[1]) #Lo agrego para armar el dataframe de animar
+      y <- append(y, r[2])
+      frame <- append(frame, it+1)
+    }
+    xyAnterior <- rxy
   }
-  xyAnterior <- rxy
+  df <- data.frame(
+  x,
+  y,
+  frame
+  )
+  df
+}
+
+transformarYDibujar <- function(xy, transformaciones) {
+  df <- calcularPuntos(xy, transformaciones)
+  p <- ggplot(df) +
+    geom_polygon(aes(frame = frame, x= x, y=y), color = "red")
+   
+  ggplotly(p, width = 600, height = 600) %>%
+    animation_opts(1000)
 }
 ```
 
 ```{r}
-df <- data.frame(
-  x,
-  y,
-  frame
-)
+transformaciones1 = list(Rotar15, Rotar15, Rotar15, Estirar)
+xycuadrado = c(1, 1, 1, 2, 4, 2, 4, 1) #x0, y0, x1, y1, x2, y2
 
-p <- ggplot(df) +
-  geom_polygon(aes(frame = frame, x= x, y=y), color = "red")
- 
-ggplotly(p, width = 600, height = 600) %>%
-  animation_opts(1000)
+transformarYDibujar(xycuadrado, transformaciones1)
 ```
 
+```{r}
+calcularEstrella <- function(n, r=1, rIntPct=50, alfa0grados=0, fill="blue") {#Me pasas la distancia de los puntos al centro; qe tanto qeres qe se hunda (en porcentaje de r) y la cantidad de puntos qe qeres qe dibuje
+  alfa0 <- alfa0grados*pi/180
+  
+  x <- c() #Aca voy a ir guardando los valores de x e y
+  y <- c()
+
+  if (n >= 3) { #Revisa qe la estrella tenga tres o mas puntos
+    rint <- r-(rIntPct*r/100) #Calculo con el porcentaje de hundimiento la distancia de los puntos internos al centro
+    alfa <- 2*pi/n #Calcula la apertura entre dos extremidades
+
+    for (i in 0:(n-1)) { #Puntos externos
+      ex <- r*cos(i*alfa+alfa0) #Calcula la posicion de los puntos extremos
+      ey <- r*sin(i*alfa+alfa0)
+      
+      x <- append(x, ex)
+      y <- append(y, ey)
+
+      #Puntos internos
+      ix <- rint*cos((i+1/2)*alfa+alfa0) #Calcula la posicion de los puntos internos
+      iy <- rint*sin((i+1/2)*alfa+alfa0)
+      
+      x <- append(x, ix)
+      y <- append(y, iy)
+    }
+
+  } else {
+    print("ERROR: No, no, no. Las estrellas tienen tres o mas puntos")
+  }
+  dfEst <- data.frame(
+    x,
+    y,
+    color = rep(fill, length(x))
+    )
+}
+
+dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0, fill="blue") {
+  dfEst <- calcularEstrella(n, r, rIntPct, alfa0, fill)
+
+  dibujo <- ggplot(dfEst) +
+    geom_polygon(aes(x= x, y=y, fill = color))
+   
+  ggplotly(dibujo, width = 600, height = 600) %>%
+    animation_opts(1000)
+}
+
+dibujarEstrella(4, alfa0=45, fill=3.1)
+```
