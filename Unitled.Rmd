@@ -31,6 +31,17 @@ Estirar = matrix(
 ```
 
 ```{r}
+Mover = matrix(
+  c(1, 0, 3,
+    0, 1, 5,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+```
+
+```{r}
 calcularPuntos <- function(xy, transformaciones) {
   cuantos <- length(xy)
   x = xy[seq(1, cuantos, by = 2)] #Toma cada dos valores el primero (qe seria la x)
@@ -71,6 +82,10 @@ transformarYDibujar <- function(xy, transformaciones) {
 ```
 
 ```{r}
+transformacionesTodas = list(Estirar, Rotar15, Mover)
+```
+
+```{r}
 transformaciones1 = list(Rotar15, Rotar15, Rotar15, Estirar)
 xycuadrado = c(1, 1, 1, 2, 4, 2, 4, 1) #x0, y0, x1, y1, x2, y2
 
@@ -78,13 +93,13 @@ transformarYDibujar(xycuadrado, transformaciones1)
 ```
 
 ```{r}
-calcularEstrella <- function(n, r=1, rIntPct=50, alfa0grados=0, fill="blue") {#Me pasas la distancia de los puntos al centro; qe tanto qeres qe se hunda (en porcentaje de r) y la cantidad de puntos qe qeres qe dibuje
+calcularEstrella <- function(n, r=1, rIntPct=50, alfa0grados=0, fill="blue") { #Me pasas la distancia de los puntos al centro; qe tanto qeres qe se hunda (en porcentaje de r) y la cantidad de puntos qe qeres qe dibuje
   alfa0 <- alfa0grados*pi/180
   
   x <- c() #Aca voy a ir guardando los valores de x e y
   y <- c()
 
-  if (n >= 3) { #Revisa qe la estrella tenga tres o mas puntos
+  if (3 <= n) { #Revisa qe la estrella tenga tres o mas puntos
     rint <- r-(rIntPct*r/100) #Calculo con el porcentaje de hundimiento la distancia de los puntos internos al centro
     alfa <- 2*pi/n #Calcula la apertura entre dos extremidades
 
@@ -97,41 +112,44 @@ calcularEstrella <- function(n, r=1, rIntPct=50, alfa0grados=0, fill="blue") {#M
 
       #Puntos internos
       ix <- rint*cos((i+1/2)*alfa+alfa0) #Calcula la posicion de los puntos internos
-      iy <- rint*sin((i+1/2)*alfa+alfa0)
+      iy <- rint*sin((i+1/2)*alfa+alfa0) 
       
       x <- append(x, ix)
       y <- append(y, iy)
     }
-
+  dfEst <- data.frame(
+    x,
+    y
+    )
   } else {
     print("ERROR: No, no, no. Las estrellas tienen tres o mas puntos")
   }
-  dfEst <- data.frame(
-    x,
-    y,
-    color = rep(fill, length(x))
-    )
 }
 
-dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0, fill="blue") {
-  dfEst <- calcularEstrella(n, r, rIntPct, alfa0, fill)
+dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0) {
+
+   dfEst <- calcularEstrella(n, r, rIntPct, alfa0, fill)
 
   dibujo <- ggplot(dfEst) +
-    geom_polygon(aes(x= x, y=y, fill = color))
-   
-  ggplotly(dibujo, width = 600, height = 600) %>%
-    animation_opts(1000)
+    geom_polygon(aes(x = x, y=y), color = "red")
+
+    if (n <= 100) {   
+    ggplotly(dibujo, width = 600, height = 600) %>%
+      animation_opts(1000)
+  } else {
+    print("Che, si pones tantos la PC anda medio mal, proba con menos")
+  }
 }
 
-dibujarEstrella(4, alfa0=45, fill=3.1)
+dibujarEstrella(70)
 ```
 ```{r}
-estrella1df <- calcularEstrella(16, fill=3.0)
+estrella1df <- calcularEstrella(16, 5)
 estrella1xy <- c()
 
 for (i in 1:length(estrella1df$x)) {
   estrella1xy <- append(estrella1xy, as.numeric(estrella1df[i, 1:2]))  
 }
 
-transformarYDibujar(estrella1xy, transformaciones1)
+transformarYDibujar(estrella1xy, transformacionesTodas)
 ```
