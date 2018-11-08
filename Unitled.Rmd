@@ -42,6 +42,17 @@ Mover = matrix(
 ```
 
 ```{r}
+Autovector <- matrix(
+  c(1, 1, 0,
+    0, 1, 0,
+    0, 0, 1),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE
+)
+```
+
+```{r}
 calcularPuntos <- function(xy, transformaciones) {
   cuantos <- length(xy)
   x = xy[seq(1, cuantos, by = 2)] #Toma cada dos valores el primero (qe seria la x)
@@ -82,7 +93,7 @@ transformarYDibujar <- function(xy, transformaciones) {
 ```
 
 ```{r}
-transformacionesTodas = list(Estirar, Rotar15, Mover)
+transformacionesTodas = list(Estirar, Rotar15, Mover, Autovector)
 ```
 
 ```{r}
@@ -90,6 +101,17 @@ transformaciones1 = list(Rotar15, Rotar15, Rotar15, Estirar)
 xycuadrado = c(1, 1, 1, 2, 4, 2, 4, 1) #x0, y0, x1, y1, x2, y2
 
 transformarYDibujar(xycuadrado, transformaciones1)
+```
+
+```{r}
+testAutovectores <- function() {
+  transformaciones2 <- list(Autovector)
+  xy <- c(-1, -1, -1, 1, 1, 1, 1, -1)
+  
+  transformarYDibujar(xy, transformaciones2)
+}
+
+testAutovectores()
 ```
 
 ```{r}
@@ -128,7 +150,7 @@ calcularEstrella <- function(n, r=1, rIntPct=50, alfa0grados=0, fill="blue") { #
 
 dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0) {
 
-   dfEst <- calcularEstrella(n, r, rIntPct, alfa0, fill)
+  dfEst <- calcularEstrella(n, r, rIntPct, alfa0, fill)
 
   dibujo <- ggplot(dfEst) +
     geom_polygon(aes(x = x, y=y), color = "red")
@@ -141,7 +163,7 @@ dibujarEstrella <- function(n, r=1, rIntPct=50, alfa0=0) {
   }
 }
 
-dibujarEstrella(70)
+dibujarEstrella(5)
 ```
 ```{r}
 estrella1df <- calcularEstrella(16, 5)
